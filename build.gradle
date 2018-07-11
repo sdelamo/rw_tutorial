@@ -1,0 +1,58 @@
+apply plugin:'base'
+
+ext {
+   starterFolder = 'starter'
+   finishedFolder = 'finished'
+   filesToExclude = ["**/local.properties",
+           "**/.idea",
+            "**/.gradle",
+            "**/build",
+            "**/.git",
+            "**/*.iml"]
+}
+task copyStarter {
+    ext.destDir = "$buildDir/${starterFolder}"
+    ext.originDir = "${rootProject.projectDir}/${starterFolder}"
+    doLast {
+        copy {
+            from originDir
+            into destDir
+	    for ( String name : filesToExclude ) {
+                exclude name
+            }
+        }
+    }
+}
+task zipStarter(type: Zip) {
+    dependsOn 'copyStarter'
+    archiveName = "${starterFolder}.zip"
+    from copyStarter.destDir
+    destinationDir = file("${buildDir}/dist")
+}
+task copyFinished {
+    ext.destDir = "$buildDir/${finishedFolder}"
+    ext.originDir = "${rootProject.projectDir}/${finishedFolder}"
+    doLast {
+        copy {
+            from originDir
+            into destDir
+	    for ( String name : filesToExclude ) {
+                exclude name
+            }
+        }
+    }
+}
+task zipFinished(type: Zip) {
+    dependsOn 'copyFinished'
+    archiveName = "${finishedFolder}.zip"
+    from copyFinished.destDir
+    destinationDir = file("${buildDir}/dist")
+}
+task zip {
+  dependsOn 'zipStarter'
+  dependsOn 'zipFinished'
+  doLast {
+    logger.quiet "Generated ${buildDir}/dist/${starterFolder}.zip"
+    logger.quiet "Generated ${buildDir}/dist/${finishedFolder}.zip"
+  }
+}
